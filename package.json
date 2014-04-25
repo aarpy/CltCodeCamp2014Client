@@ -1,0 +1,12 @@
+{
+  "name": "cltcodecamp2014Client",
+  "version": "0.0.0",
+  "dependencies": {
+    "socket.io-client": "^0.9.16"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {}
+}

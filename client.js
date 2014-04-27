@@ -10,11 +10,12 @@ function createClient(name, url, io, messagesDuration, messagesPerConn) {
   }
 
   socket.on('connect', function() {
-    console.info(name + ':socket:connect');
+    //console.info(name + ':socket:connect');
 
     socket.on('init', function(data) {
       console.info(name + ':socket:init:' + data.username + ':' + data.usercount);
       sendMessages(name, socket, messagesDuration, messagesPerConn);
+      closeSocket(name, socket, messagesDuration);
     });
     
     //socket.on('join', function(data) {
@@ -38,13 +39,17 @@ function createClient(name, url, io, messagesDuration, messagesPerConn) {
 
 function sendMessages(name, socket, messagesDuration, messagesPerConn) {
   for (var i = 1; i <= messagesPerConn; i++) {
-    var delay = Math.floor((Math.random()*1000*messagesDuration)+1) + 1000;
+    var delay = Math.floor((Math.random()*1000*messagesDuration)+1);
     setTimeout( function(counter) {
       var content = 'Hello Code Camp from ' + name + ' - ' + counter + '!';
       console.info(name + ':socket:message::' + content);
       socket.emit('message', { content:  content});
     }, delay, i);
   };
+}
+
+function closeSocket(name, socket, messagesDuration) {
+    setTimeout( function() { socket.disconnect(); }, messagesDuration*1000 + 1000);
 }
 
 function main() {

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-function createClient(name, url, io, delayInSecs) {
+function createClient(name, url, io, delayInSecs, messagesPerConn) {
   // Adding multiple clients
   // http://stackoverflow.com/questions/22713819/socket-io-client-connecting-to-multiple-servers
   var socket = io.connect(url, { 'force new connection':true });
@@ -14,12 +14,7 @@ function createClient(name, url, io, delayInSecs) {
 
     socket.on('init', function(data) {
       console.info(name + ':socket:init:' + data.username + ':' + data.usercount);
-
-      var delay = Math.floor((Math.random()*1000*delayInSecs)+1) + 1000;
-      setTimeout( function() {
-        console.info(name + ':socket:message::Hello Code Camp from ' + name + '!');
-        socket.emit('message', { content: "Hello Code Camp from " + name + "!" });
-      }, delay);
+      sendMessages(name, socket, delayInSecs, messagesPerConn);
     });
     
     //socket.on('join', function(data) {
@@ -41,29 +36,51 @@ function createClient(name, url, io, delayInSecs) {
   });
 }
 
-var io = require('socket.io-client');
-
-var url = 'http://localhost:9000';
-if (process.argv.length >= 3) {
-  url = process.argv[2];
+function sendMessages(name, socket, delayInSecs, messagesPerConn) {
+  for (var i = 1; i <= messagesPerConn; i++) {
+    var delay = Math.floor((Math.random()*1000*delayInSecs)+1) + 1000;
+    setTimeout( function(counter) {
+      var content = 'Hello Code Camp from ' + name + ' - ' + counter + '!';
+      console.info(name + ':socket:message::' + content);
+      socket.emit('message', { content:  content});
+    }, delay, i);
+  };
 }
 
-var clientCount = 2;
-if (process.argv.length >= 4) {
-  clientCount = parseInt(process.argv[3]);
+function main() {
+  var io = require('socket.io-client');
+
+  var url = 'http://localhost:9000';
+  if (process.argv.length >= 3) {
+    url = process.argv[2];
+  }
+
+  var clientCount = 2;
+  if (process.argv.length >= 4) {
+    clientCount = parseInt(process.argv[3]);
+  }
+
+  var delayInSecs = 5;
+  if (process.argv.length >= 5) {
+    delayInSecs = parseInt(process.argv[4]);
+  }
+
+  var messagesPerConn = 3;
+  if (process.argv.length >= 6) {
+    messagesPerConn = parseInt(process.argv[5]);
+  }
+
+  console.info('client:url:' + url);
+  console.info('client:clientCount:' + clientCount);
+  console.info('client:delayInSecs:' + delayInSecs);
+  console.info('client:messagesPerConn:' + messagesPerConn);
+
+  for (var i = 1; i <= clientCount; i++) {
+    createClient("Bot" + i, url, io, delayInSecs, messagesPerConn);
+  };
+
+  console.info('client:started');
 }
 
-var delayInSecs = 5;
-if (process.argv.length >= 5) {
-  delayInSecs = parseInt(process.argv[4]);
-}
-
-console.info('client:url:' + url);
-console.info('client:clientCount:' + clientCount);
-console.info('client:delayInSecs:' +delayInSecs);
-
-for (var i = 1; i <= clientCount; i++) {
-  createClient("c" + i, url, io, delayInSecs);
-};
-
-console.info('client:started');
+//invoke main
+main();

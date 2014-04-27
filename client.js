@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 
-function createClient(io, name, delayInSecs) {
+function createClient(name, url, io, delayInSecs) {
   // Adding multiple clients
   // http://stackoverflow.com/questions/22713819/socket-io-client-connecting-to-multiple-servers
-  var socket = io.connect('http://localhost:9000', { 'force new connection':true });
+  var socket = io.connect(url, { 'force new connection':true });
+  if (!socket) {
+    console.log('failed to create socket: ' + name);
+    return;
+  }
 
   socket.on('connect', function() {
     console.info(name + ':socket:connect');
@@ -39,21 +43,27 @@ function createClient(io, name, delayInSecs) {
 
 var io = require('socket.io-client');
 
-var clientCount = 2;
+var url = 'http://localhost:9000';
 if (process.argv.length >= 3) {
-  clientCount = parseInt(process.argv[2]);
+  url = process.argv[2];
+}
+
+var clientCount = 2;
+if (process.argv.length >= 4) {
+  clientCount = parseInt(process.argv[3]);
 }
 
 var delayInSecs = 5;
-if (process.argv.length >= 4) {
-  delayInSecs = parseInt(process.argv[3]);
+if (process.argv.length >= 5) {
+  delayInSecs = parseInt(process.argv[4]);
 }
 
+console.info('client:url:' + url);
 console.info('client:clientCount:' + clientCount);
 console.info('client:delayInSecs:' +delayInSecs);
 
 for (var i = 1; i <= clientCount; i++) {
-  createClient(io, "c" + i, delayInSecs);
+  createClient("c" + i, url, io, delayInSecs);
 };
 
 console.info('client:started');

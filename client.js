@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-function createClient(name, url, io, delayInSecs, messagesPerConn) {
+function createClient(name, url, io, messagesDuration, messagesPerConn) {
   // Adding multiple clients
   // http://stackoverflow.com/questions/22713819/socket-io-client-connecting-to-multiple-servers
   var socket = io.connect(url, { 'force new connection':true });
@@ -14,7 +14,7 @@ function createClient(name, url, io, delayInSecs, messagesPerConn) {
 
     socket.on('init', function(data) {
       console.info(name + ':socket:init:' + data.username + ':' + data.usercount);
-      sendMessages(name, socket, delayInSecs, messagesPerConn);
+      sendMessages(name, socket, messagesDuration, messagesPerConn);
     });
     
     //socket.on('join', function(data) {
@@ -36,9 +36,9 @@ function createClient(name, url, io, delayInSecs, messagesPerConn) {
   });
 }
 
-function sendMessages(name, socket, delayInSecs, messagesPerConn) {
+function sendMessages(name, socket, messagesDuration, messagesPerConn) {
   for (var i = 1; i <= messagesPerConn; i++) {
-    var delay = Math.floor((Math.random()*1000*delayInSecs)+1) + 1000;
+    var delay = Math.floor((Math.random()*1000*messagesDuration)+1) + 1000;
     setTimeout( function(counter) {
       var content = 'Hello Code Camp from ' + name + ' - ' + counter + '!';
       console.info(name + ':socket:message::' + content);
@@ -48,6 +48,8 @@ function sendMessages(name, socket, delayInSecs, messagesPerConn) {
 }
 
 function main() {
+  console.info('node client.js <url> <clientCount> <messagesDuration> <messagesPerConn>');
+  
   var io = require('socket.io-client');
 
   var url = 'http://localhost:9000';
@@ -60,9 +62,9 @@ function main() {
     clientCount = parseInt(process.argv[3]);
   }
 
-  var delayInSecs = 5;
+  var messagesDuration = 5;
   if (process.argv.length >= 5) {
-    delayInSecs = parseInt(process.argv[4]);
+    messagesDuration = parseInt(process.argv[4]);
   }
 
   var messagesPerConn = 3;
@@ -70,13 +72,10 @@ function main() {
     messagesPerConn = parseInt(process.argv[5]);
   }
 
-  console.info('client:url:' + url);
-  console.info('client:clientCount:' + clientCount);
-  console.info('client:delayInSecs:' + delayInSecs);
-  console.info('client:messagesPerConn:' + messagesPerConn);
+  console.info('node client.js ' + url + ' ' + clientCount + ' ' + messagesDuration + ' ' + messagesPerConn);
 
   for (var i = 1; i <= clientCount; i++) {
-    createClient("Bot" + i, url, io, delayInSecs, messagesPerConn);
+    createClient("Bot" + i, url, io, messagesDuration, messagesPerConn);
   };
 
   console.info('client:started');
